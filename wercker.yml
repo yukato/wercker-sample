@@ -1,4 +1,4 @@
-box: wercker/ruby
+box: wercker/rvm
 
 services:
     - wercker/mysql
@@ -27,6 +27,24 @@ build:
         - script:
             name: rspec
             code: bundle exec rspec
+
+    after-steps:
+        - wantedly/pretty-slack-notify:
+            webhook_url: $SLACK_WEBHOOK_URL
+
+
+deploy:
+    steps:
+        - pip-install:
+            requirements_file: ""
+            packages_list: "awscli"
+        - mactynow/aws-opsworks-deploy:
+            access_key_id: [$DEPLOY_IAM_KEY]
+            secret_access_key: [$DEPLOY_IAM_ACCESS_KEY]
+            default_region: us-east-1
+            default_ouput: json
+            stack_id: [$OPSWORKS_STACK_ID]
+            app_id: [$OPSWORKS_APP_ID]
 
     after-steps:
         - wantedly/pretty-slack-notify:
